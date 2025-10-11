@@ -2,7 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import axios from "../utils/axios";
 
-export const useChatStore = create((set) => ({
+export const useChatStore = create((set, get) => ({
     messages: [],
     users: [],
     selectedUser: null,
@@ -23,7 +23,7 @@ export const useChatStore = create((set) => ({
     },
 
     getMessage: async (userId) => {
-        set({ isMessagesLoading: true})
+        set({ isMessagesLoading: true })
         try {
             const res = await axios.get(`/message/${userId}`)
             set({ messages: res.data })
@@ -31,6 +31,16 @@ export const useChatStore = create((set) => ({
             toast.error(error.response.data.message)
         } finally {
             set({ isMessagesLoading: false })
+        }
+    },
+
+    sendMessage: async (messageData) => {
+        const { selectedUser, messages } = get();
+        try {
+            const res = await axios.post(`/message/send/${selectedUser._id}`, messageData);
+            set({ messages: [...messages, res.data] });
+        } catch (error) {
+            toast.error(error.response.data.message);
         }
     },
 
